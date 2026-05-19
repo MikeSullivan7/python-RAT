@@ -826,9 +826,7 @@ def plot_one_hist(
     sd_y = np.std(parameter_chain)
 
     if smooth:
-        if sigma is None:
-            sigma = sd_y / 2
-        counts = gaussian_filter1d(counts, sigma)
+        counts = moving_avg(counts)
     axes.hist(
         bins[:-1],
         bins,
@@ -1233,3 +1231,30 @@ def plot_bayes(project: ratapi.Project, results: ratapi.outputs.BayesResults):
         plot_corner(results)
     else:
         raise ValueError("Bayes plots are only available for the results of Bayesian analysis (NS or DREAM)")
+
+
+def moving_avg(data: np.ndarray, window_size: int = 8) -> list[float]:
+    """Calculate the moving average of an array with a given window size.
+
+    This is a python equivalent to MATLABs smoothdata(A, 'movmean')
+
+    Parameters
+    ----------
+    data : np.ndarray
+           The input array to smooth
+    window_size : int
+                  The window slides down the length of the vector,
+                  computing an average over the elements within each window.
+
+    """
+    i = 0
+    moving_averages = []
+
+    while i < len(data):
+        start_window_ind = floor(float(i - window_size / 2)) if i - window_size / 2 > 0 else 0
+        end_window_ind = floor(float(i + window_size / 2)) if i + window_size / 2 < len(data) else len(data)
+        window_average = np.sum(data[start_window_ind:end_window_ind]) / (end_window_ind + 0 - start_window_ind)
+        moving_averages.append(window_average)
+        i += 1
+
+    return moving_averages
