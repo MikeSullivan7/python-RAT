@@ -501,15 +501,55 @@ def test_moving_average() -> None:
     """Test the moving_average function."""
     data_to_average = np.arange(0, 20)
     mov_avg = RATplot.moving_average(data_to_average)
-    assert mov_avg == [1.5, 2.0, 2.5, 3.0, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.0,
-                       16.5, 17.0]
+    assert mov_avg == [
+        1.5,
+        2.0,
+        2.5,
+        3.0,
+        3.5,
+        4.5,
+        5.5,
+        6.5,
+        7.5,
+        8.5,
+        9.5,
+        10.5,
+        11.5,
+        12.5,
+        13.5,
+        14.5,
+        15.5,
+        16.0,
+        16.5,
+        17.0,
+    ]
 
     mov_avg = RATplot.moving_average(data_to_average, window_size=2)
-    assert mov_avg == [0.0, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5,
-                       17.5, 18.5]
+    assert mov_avg == [
+        0.0,
+        0.5,
+        1.5,
+        2.5,
+        3.5,
+        4.5,
+        5.5,
+        6.5,
+        7.5,
+        8.5,
+        9.5,
+        10.5,
+        11.5,
+        12.5,
+        13.5,
+        14.5,
+        15.5,
+        16.5,
+        17.5,
+        18.5,
+    ]
 
     with pytest.raises(AssertionError):
         RATplot.moving_average(data_to_average, window_size=-1)
 
     with pytest.raises(AssertionError):
-        RATplot.moving_average(data_to_average, window_size=len(data_to_average)+1)
+        RATplot.moving_average(data_to_average, window_size=len(data_to_average) + 1)
