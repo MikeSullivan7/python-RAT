@@ -1132,7 +1132,6 @@ def plot_hists(
             results,
             i,
             smooth=smooth,
-            sigma=sigma,
             estimated_density=estimated_density.get(i),
             axes=ax,
             **hist_settings,
@@ -1247,7 +1246,11 @@ def moving_average(data: np.ndarray, window_size: int = 8) -> list[float]:
                   computing an average over the elements within each window.
 
     """
-    assert 0 <= window_size <= len(data)
+    if not 0 <= window_size <= len(data):
+        raise ValueError(
+            "The moving average window size is out of range. Please change to a positive integer which "
+            "does not exceed the number of histogram bins."
+        )
     moving_averages = []
 
     for i in range(len(data)):
@@ -1255,6 +1258,5 @@ def moving_average(data: np.ndarray, window_size: int = 8) -> list[float]:
         end_window_ind = floor(float(i + window_size / 2)) if i + window_size / 2 < len(data) else len(data)
         window_average = np.sum(data[start_window_ind:end_window_ind]) / (end_window_ind + 0 - start_window_ind)
         moving_averages.append(window_average)
-        i += 1
 
     return moving_averages

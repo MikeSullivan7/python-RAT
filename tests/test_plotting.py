@@ -548,8 +548,8 @@ def test_moving_average() -> None:
         18.5,
     ]
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         RATplot.moving_average(data_to_average, window_size=-1)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         RATplot.moving_average(data_to_average, window_size=len(data_to_average) + 1)
