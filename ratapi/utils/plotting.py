@@ -763,7 +763,7 @@ def plot_one_hist(
     results: ratapi.outputs.BayesResults,
     param: int | str,
     smooth: bool = True,
-    sigma: float | None = None,
+    window_size: int = 8,
     estimated_density: Literal["normal", "lognor", "kernel", None] = None,
     axes: Axes | None = None,
     block: bool = False,
@@ -783,9 +783,9 @@ def plot_one_hist(
     smooth : bool, default True
         Whether to apply Gaussian smoothing to the histogram.
         Defaults to True.
-    sigma: float or None, default None
-        If given, is used as the sigma-parameter for the Gaussian smoothing.
-        If None, the default (1/3rd of parameter chain standard deviation) is used.
+    window_size : int, default 8
+        The width of the smoothing window centered around the element being averaged.
+        The window moves down the length of the data, computing an average over the elements within each window.
     estimated_density : 'normal', 'lognor', 'kernel' or None, default None
         If None (default), ignore. Else, add an estimated density
         of the given form on top of the histogram by the following estimations:
@@ -826,9 +826,7 @@ def plot_one_hist(
     sd_y = np.std(parameter_chain)
 
     if smooth:
-        if sigma is None:
-            sigma = sd_y / 2
-        counts = gaussian_filter1d(counts, sigma)
+        counts = moving_average(counts, window_size=window_size)
     axes.hist(
         bins[:-1],
         bins,
@@ -1134,7 +1132,6 @@ def plot_hists(
             results,
             i,
             smooth=smooth,
-            sigma=sigma,
             estimated_density=estimated_density.get(i),
             axes=ax,
             **hist_settings,
@@ -1233,3 +1230,33 @@ def plot_bayes(project: ratapi.Project, results: ratapi.outputs.BayesResults):
         plot_corner(results)
     else:
         raise ValueError("Bayes plots are only available for the results of Bayesian analysis (NS or DREAM)")
+
+
+def moving_average(data: np.ndarray, window_size: int = 8) -> list[float]:
+    """Calculate the moving average of an array with a given window size.
+
+    This is a python equivalent to MATLABs smoothdata(A, 'movmean')
+
+    Parameters
+    ----------
+    data : np.ndarray
+           The input array to smooth
+    window_size : int
+                  The window slides down the length of the vector,
+                  computing an average over the elements within each window.
+
+    """
+    if not 0 <= window_size <= len(data):
+        raise ValueError(
+            "The moving average window size is out of range. Please change to a positive integer which "
+            "does not exceed the number of histogram bins."
+        )
+    moving_averages = []
+
+    for i in range(len(data)):
+        start_window_ind = floor(float(i - window_size / 2)) if i - window_size / 2 > 0 else 0
+        end_window_ind = floor(float(i + window_size / 2)) if i + window_size / 2 < len(data) else len(data)
+        window_average = np.sum(data[start_window_ind:end_window_ind]) / (end_window_ind + 0 - start_window_ind)
+        moving_averages.append(window_average)
+
+    return moving_averages
